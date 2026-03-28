@@ -99,7 +99,7 @@ Recommended prerequisites:
 Current repository status:
 
 - manifest.json metadata configured for GitHub.
-- v0.1.0 and v0.1.1 tags/releases published.
+- v0.1.0, v0.1.1, v0.1.2 and v0.1.3 tags/releases published.
 - HACS and Hassfest validation workflow in place.
 
 ## Known limitations

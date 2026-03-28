@@ -1,7 +1,7 @@
 """Constants for the HA Dropdown Fix integration."""
 
 DOMAIN = "ha_dropdown_fix"
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 CONF_ENABLED = "enabled"
 CONF_Z_INDEX = "z_index"

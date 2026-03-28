@@ -64,7 +64,12 @@ ${menuSelector} {
 }
 
 ha-dropdown[open] [part='menu'],
-.mdc-menu-surface--open {
+.mdc-menu-surface--open,
+div#menu,
+[part='menu'],
+[part='popup'],
+.popup,
+wa-popup[active] [part='popup'] {
   background: #6b0000 !important;
   color: #ffffff !important;
   z-index: ${zIndex} !important;
