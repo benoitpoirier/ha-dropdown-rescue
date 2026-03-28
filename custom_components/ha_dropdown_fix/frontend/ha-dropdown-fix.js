@@ -42,8 +42,21 @@
     "ha-dropdown[open] [part='menu']",
     ".mdc-menu-surface--open",
     "wa-popup[active]",
+    "wa-popup[active] [part='popup']",
     "div#menu",
-    ".ha-dropdown-menu"
+    ".ha-dropdown-menu",
+    "[part='popup']",
+    ".popup"
+  ].join(",");
+
+  const promotedContainerSelector = [
+    "ha-card",
+    "hui-card",
+    "hui-grid-section",
+    ".card",
+    ".section",
+    "ha-control-select-menu",
+    "ha-select"
   ].join(",");
 
   const overflowSelectors = [
@@ -222,8 +235,14 @@ ${
 
     while (current && depth < 16) {
       if (current instanceof HTMLElement && !elevatedElements.has(current)) {
+        const isPromotedContainer = current.matches(promotedContainerSelector);
+
         current.style.setProperty("z-index", String(Math.max(zIndex - depth, 1000)), "important");
         current.style.setProperty("isolation", "isolate", "important");
+
+        if (isPromotedContainer) {
+          current.style.setProperty("position", "relative", "important");
+        }
 
         if (fixOverflow) {
           current.style.setProperty("overflow", "visible", "important");
@@ -245,6 +264,10 @@ ${
             current.style.setProperty("backdrop-filter", "none", "important");
             current.style.setProperty("-webkit-backdrop-filter", "none", "important");
           }
+
+          if (isPromotedContainer) {
+            current.style.setProperty("position", "relative", "important");
+          }
         }
 
         elevatedElements.add(current);
@@ -256,7 +279,28 @@ ${
   };
 
   const promoteOpenMenus = () => {
-    const openMenus = document.querySelectorAll(activeMenuSelector);
+    const openMenus = new Set();
+
+    const collectMenusInRoot = (root) => {
+      if (!root || !root.querySelectorAll) {
+        return;
+      }
+
+      const menus = root.querySelectorAll(activeMenuSelector);
+      for (const menu of menus) {
+        openMenus.add(menu);
+      }
+
+      const elements = root.querySelectorAll("*");
+      for (const element of elements) {
+        if (element.shadowRoot) {
+          collectMenusInRoot(element.shadowRoot);
+        }
+      }
+    };
+
+    collectMenusInRoot(document);
+
     for (const menu of openMenus) {
       elevateForMenu(menu);
     }
