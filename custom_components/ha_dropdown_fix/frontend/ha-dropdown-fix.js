@@ -50,6 +50,8 @@
   ].join(",");
 
   const promotedContainerSelector = [
+    ".content",
+    "hui-section",
     "ha-card",
     "hui-card",
     "hui-grid-section",
@@ -226,10 +228,6 @@ ${
     menuElement.style.setProperty("visibility", "visible", "important");
     menuElement.style.setProperty("opacity", "1", "important");
 
-    if (aggressiveMode) {
-      menuElement.style.setProperty("position", "fixed", "important");
-    }
-
     let current = menuElement;
     let depth = 0;
 
@@ -251,16 +249,18 @@ ${
 
         if (aggressiveMode) {
           const computed = window.getComputedStyle(current);
-          if (computed.transform !== "none") {
+          const canResetCompositeEffects = depth > 0;
+
+          if (canResetCompositeEffects && computed.transform !== "none") {
             current.style.setProperty("transform", "none", "important");
           }
-          if (computed.filter !== "none") {
+          if (canResetCompositeEffects && computed.filter !== "none") {
             current.style.setProperty("filter", "none", "important");
           }
-          if (computed.perspective !== "none") {
+          if (canResetCompositeEffects && computed.perspective !== "none") {
             current.style.setProperty("perspective", "none", "important");
           }
-          if (computed.backdropFilter !== "none") {
+          if (canResetCompositeEffects && computed.backdropFilter !== "none") {
             current.style.setProperty("backdrop-filter", "none", "important");
             current.style.setProperty("-webkit-backdrop-filter", "none", "important");
           }
