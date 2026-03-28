@@ -15,12 +15,14 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.typing import ConfigType
 
 from .const import (
+    CONF_AGGRESSIVE_MODE,
     CONF_DEBUG_OUTLINE,
     CONF_ENABLED,
     CONF_EXTRA_MENU_SELECTORS,
     CONF_FIX_OVERFLOW,
     CONF_SCAN_SHADOW_DOM,
     CONF_Z_INDEX,
+    DEFAULT_AGGRESSIVE_MODE,
     DEFAULT_DEBUG_OUTLINE,
     DEFAULT_ENABLED,
     DEFAULT_EXTRA_MENU_SELECTORS,
@@ -48,6 +50,9 @@ CONFIG_SCHEMA = vol.Schema(
                 ): cv.boolean,
                 vol.Optional(
                     CONF_DEBUG_OUTLINE, default=DEFAULT_DEBUG_OUTLINE
+                ): cv.boolean,
+                vol.Optional(
+                    CONF_AGGRESSIVE_MODE, default=DEFAULT_AGGRESSIVE_MODE
                 ): cv.boolean,
                 vol.Optional(
                     CONF_EXTRA_MENU_SELECTORS,
@@ -86,6 +91,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         "overflow": "1" if integration_config[CONF_FIX_OVERFLOW] else "0",
         "shadow": "1" if integration_config[CONF_SCAN_SHADOW_DOM] else "0",
         "debug": "1" if integration_config[CONF_DEBUG_OUTLINE] else "0",
+        "aggressive": "1" if integration_config[CONF_AGGRESSIVE_MODE] else "0",
     }
 
     extra_selectors = integration_config[CONF_EXTRA_MENU_SELECTORS]

@@ -40,6 +40,7 @@ ha_dropdown_fix:
   fix_overflow: true
   scan_shadow_dom: true
   debug_outline: false
+  aggressive_mode: false
   extra_menu_selectors: []
 ```
 
@@ -54,6 +55,7 @@ Paramètres disponibles sous `ha_dropdown_fix`:
 - `fix_overflow` (`bool`, défaut: `true`): retire certains `overflow/contain` bloquants.
 - `scan_shadow_dom` (`bool`, défaut: `true`): applique le style dans les Shadow DOM.
 - `debug_outline` (`bool`, défaut: `false`): affiche un contour de debug autour des menus.
+- `aggressive_mode` (`bool`, défaut: `false`): force un mode de correction plus agressif (utile pour certains navigateurs/appareils, notamment iOS 15/16).
 - `extra_menu_selectors` (`list[str]`, défaut: `[]`): sélecteurs CSS additionnels à forcer.
 
 Exemple avancé:
