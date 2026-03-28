@@ -4,6 +4,8 @@ Correctif communautaire pour Home Assistant, basé sur le ticket frontend
 [#29172](https://github.com/home-assistant/frontend/issues/29172), qui provoque des menus
 `ha-dropdown` transparents/non cliquables (problèmes de focus/superposition/z-index).
 
+Repository officiel: https://github.com/benoitpoirier/ha-dropdown-rescue
+
 ## Objectifs
 
 - Corriger les menus "3 points" et autres dropdowns inactifs dans l'UI.
@@ -23,7 +25,7 @@ Correctif communautaire pour Home Assistant, basé sur le ticket frontend
 ### 1. Ajouter le repository dans HACS
 
 1. Ouvrir HACS > menu 3 points > `Custom repositories`.
-2. Ajouter l'URL du repository.
+2. Ajouter l'URL du repository: `https://github.com/benoitpoirier/ha-dropdown-rescue`.
 3. Choisir la catégorie `Integration`.
 4. Installer `HA Dropdown Fix`.
 
