@@ -55,7 +55,7 @@ Available options under ha_dropdown_fix:
 - z_index (int, default: 2147483647): visual priority for menus.
 - fix_overflow (bool, default: true): relax blocking overflow and contain contexts.
 - scan_shadow_dom (bool, default: true): apply styles in detected Shadow DOM roots.
-- debug_outline (bool, default: false): show a debug outline around patched menus.
+- debug_outline (bool, default: false): diagnostic mode, forces a dark red menu background and white text on targeted dropdown surfaces.
 - auto_legacy_fallback (bool, default: true): automatically enable stronger fallback behavior on browsers that do not support the Popover API.
 - aggressive_mode (bool, default: false): force stronger compositing and clipping fixes regardless of browser capability detection.
 - extra_menu_selectors (list[str], default: []): additional CSS selectors to force.
@@ -103,6 +103,13 @@ What changed because of this analysis in v0.1.7:
 - Kept all style promotions reversible to avoid persistent side effects after menu close.
 - Removed temporary diagnostic color forcing that is no longer necessary.
 
+Diagnostic extension in v0.1.8:
+
+- Debug mode now uses a dark red menu background for immediate visual confirmation.
+- Fallback decision for Popover top-layer is logged in the browser console.
+- Competing `.search` layers are scanned in Shadow DOM roots, not only in the document root.
+- Ancestor promotion is more conservative (reduced isolation forcing, deeper but safer traversal).
+
 ## Official HACS publication
 
 Recommended prerequisites:
@@ -116,7 +123,7 @@ Recommended prerequisites:
 Current repository status:
 
 - manifest.json metadata configured for GitHub.
-- v0.1.0, v0.1.1, v0.1.2, v0.1.3, v0.1.4, v0.1.5, v0.1.6 and v0.1.7 tags/releases published.
+- v0.1.0, v0.1.1, v0.1.2, v0.1.3, v0.1.4, v0.1.5, v0.1.6, v0.1.7 and v0.1.8 tags/releases published.
 - HACS and Hassfest validation workflow in place.
 
 ## Known limitations

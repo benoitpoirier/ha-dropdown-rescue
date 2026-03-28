@@ -15,12 +15,27 @@
   const debugOutline = scriptUrl.searchParams.get("debug") === "1";
   const autoLegacyFallback = scriptUrl.searchParams.get("legacyfallback") !== "0";
   const extraSelectorsRaw = scriptUrl.searchParams.get("extra") || "";
-  const supportsPopoverApi =
+  const supportsPopoverMethods =
     typeof HTMLElement !== "undefined" &&
-    ("showPopover" in HTMLElement.prototype || "popover" in HTMLElement.prototype);
-  const legacyPopoverFallback = autoLegacyFallback && !supportsPopoverApi;
+    "showPopover" in HTMLElement.prototype &&
+    "hidePopover" in HTMLElement.prototype;
+  const supportsPopoverSelector =
+    typeof CSS !== "undefined" &&
+    typeof CSS.supports === "function" &&
+    CSS.supports("selector(:popover-open)");
+  const hasReliablePopoverTopLayer = supportsPopoverMethods && supportsPopoverSelector;
+  const legacyPopoverFallback = autoLegacyFallback && !hasReliablePopoverTopLayer;
   const aggressiveMode =
     legacyPopoverFallback || scriptUrl.searchParams.get("aggressive") === "1";
+
+  console.info("[ha-dropdown-fix] popover decision", {
+    autoLegacyFallback,
+    supportsPopoverMethods,
+    supportsPopoverSelector,
+    hasReliablePopoverTopLayer,
+    legacyPopoverFallback,
+    aggressiveMode
+  });
 
   const extraSelectors = extraSelectorsRaw
     .split("|")
@@ -128,8 +143,10 @@ ${
 
 ${
   debugOutline
-    ? `${menuSelector} {
-  outline: 2px solid #00b050 !important;
+    ? `${menuSelector},
+${activeMenuSelector} {
+  background: #6b0000 !important;
+  color: #ffffff !important;
 }`
     : ""
 }
@@ -173,12 +190,30 @@ ${
     managedStyles.clear();
   };
 
+  const collectMatchesAcrossRoots = (selector, root = document, results = new Set()) => {
+    if (!root || !root.querySelectorAll) {
+      return results;
+    }
+
+    for (const match of root.querySelectorAll(selector)) {
+      results.add(match);
+    }
+
+    for (const element of root.querySelectorAll("*")) {
+      if (element.shadowRoot) {
+        collectMatchesAcrossRoots(selector, element.shadowRoot, results);
+      }
+    }
+
+    return results;
+  };
+
   const demoteCompetingLayers = () => {
     if (!legacyPopoverFallback) {
       return;
     }
 
-    const candidates = document.querySelectorAll(".search");
+    const candidates = collectMatchesAcrossRoots(".search");
     for (const layer of candidates) {
       if (!(layer instanceof HTMLElement)) {
         continue;
@@ -274,22 +309,23 @@ ${
     applyManagedStyle(menuElement, "pointer-events", "auto");
     applyManagedStyle(menuElement, "visibility", "visible");
     applyManagedStyle(menuElement, "opacity", "1");
+    applyManagedStyle(menuElement, "isolation", "isolate");
 
     let current = menuElement;
     let depth = 0;
     const visited = new Set();
 
-    while (current && depth < 16) {
+    while (current && depth < 24) {
       if (current instanceof HTMLElement && !visited.has(current)) {
         visited.add(current);
 
         const isPromotedContainer = current.matches(promotedContainerSelector);
 
         applyManagedStyle(current, "z-index", String(Math.max(zIndex - depth, 1000)));
-        applyManagedStyle(current, "isolation", "isolate");
 
         if (isPromotedContainer) {
           applyManagedStyle(current, "position", "relative");
+          applyManagedStyle(current, "isolation", "isolate");
         }
 
         if (fixOverflow) {
@@ -332,20 +368,8 @@ ${
     const openMenus = new Set();
 
     const collectMenusInRoot = (root) => {
-      if (!root || !root.querySelectorAll) {
-        return;
-      }
-
-      const menus = root.querySelectorAll(activeMenuSelector);
-      for (const menu of menus) {
+      for (const menu of collectMatchesAcrossRoots(activeMenuSelector, root)) {
         openMenus.add(menu);
-      }
-
-      const elements = root.querySelectorAll("*");
-      for (const element of elements) {
-        if (element.shadowRoot) {
-          collectMenusInRoot(element.shadowRoot);
-        }
       }
     };
 
