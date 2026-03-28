@@ -90,6 +90,12 @@ Pré-requis conseillés:
 4. Vérifier que HACS + Hassfest passent sur la branche par défaut.
 5. Soumettre le repository au store HACS officiel via la procédure HACS.
 
+Statut actuel de ce repository:
+
+- Metadata `manifest.json` configurée pour GitHub.
+- Tag/release `v0.1.0` publié.
+- Workflow de validation HACS + Hassfest en place.
+
 ## Limites connues
 
 - Le bug original est côté frontend Home Assistant. Ce projet applique un patch runtime de contournement.
