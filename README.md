@@ -88,34 +88,25 @@ ha_dropdown_fix:
 
 ## Browser compatibility analysis (iOS 15/16)
 
-Result of the compatibility deep-dive performed on real snapshots and browser support data:
+Current verified findings:
 
-- Home Assistant uses popup markup based on `popover="manual"` in several dropdown surfaces.
-- Safari iOS 15 and 16 do not provide full Popover API support (no reliable top-layer behavior).
-- In failing views, `.search` combines `position: sticky`, very high `z-index`, and `isolation`, creating an independent stacking context.
-- HA theme styles often use `backdrop-filter`, which increases compositing complexity on older WebKit versions.
-- Therefore, a pure `z-index` increase on dropdown items is not always enough on iOS 15/16.
+- Home Assistant uses popup surfaces tied to `popover="manual"` in several dropdown implementations.
+- On older Safari/WebKit (notably iOS 15 and part of iOS 16 ecosystem), Popover top-layer behavior is not consistently reliable for these HA surfaces.
+- In failing views, competing layers such as `.search` can combine `position: sticky`, high `z-index`, `isolation`, and `backdrop-filter`, creating strong local stacking contexts.
+- As a result, increasing dropdown `z-index` alone is often insufficient.
 
-What changed because of this analysis in v0.1.7:
+Current mitigation used by this integration:
 
-- Replaced iOS User-Agent targeting with capability detection based on Popover API support.
-- Added a legacy fallback path that temporarily demotes competing `.search` layer styling while a menu is open.
-- Kept all style promotions reversible to avoid persistent side effects after menu close.
-- Removed temporary diagnostic color forcing that is no longer necessary.
+- Capability-based legacy fallback (no User-Agent dependence) when Popover top-layer cannot be trusted.
+- Temporary demotion of competing `.search` layers, including inside Shadow DOM roots.
+- Reversible style management so temporary stacking overrides are restored when menus close.
+- Conservative ancestor promotion that avoids global layout hosts (`home-assistant`, `ha-app-layout`, `app-drawer-layout`, `ha-sidebar`) to prevent sidebar masking.
+- Performance-oriented scanning and mutation handling to reduce rendering overhead.
 
-Diagnostic extension in v0.1.8:
+Optional diagnostics:
 
-- Debug mode now uses a dark red menu background for immediate visual confirmation.
-- Fallback decision for Popover top-layer is logged in the browser console.
-- Competing `.search` layers are scanned in Shadow DOM roots, not only in the document root.
-- Ancestor promotion is more conservative (reduced isolation forcing, deeper but safer traversal).
-
-Stability/performance refinement in v0.1.9:
-
-- Prevent promotion on global layout hosts (`home-assistant`, `ha-app-layout`, `app-drawer-layout`, `ha-sidebar`) to avoid masking the main sidebar.
-- Reduce ancestor promotion scope to nearby/targeted nodes instead of broad chain forcing.
-- Replace full recursive root scans with tracked styled roots for lower CPU cost.
-- Reduce mutation observer churn by observing only `open` and `active` attributes.
+- `debug_outline: true` switches targeted dropdown surfaces to a dark red diagnostic background for visual verification.
+- Popover fallback decisions are logged in the browser console under `[ha-dropdown-fix]`.
 
 ## Official HACS publication
 
@@ -130,7 +121,7 @@ Recommended prerequisites:
 Current repository status:
 
 - manifest.json metadata configured for GitHub.
-- v0.1.0, v0.1.1, v0.1.2, v0.1.3, v0.1.4, v0.1.5, v0.1.6, v0.1.7, v0.1.8 and v0.1.9 tags/releases published.
+- semantic tags and releases are published on GitHub.
 - HACS and Hassfest validation workflow in place.
 
 ## Known limitations
