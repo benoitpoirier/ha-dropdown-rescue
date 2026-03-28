@@ -65,9 +65,15 @@ ${menuSelector} {
 
 ha-dropdown[open] [part='menu'],
 .mdc-menu-surface--open {
-  background: var(--card-background-color, var(--ha-card-background, #fff)) !important;
-  color: var(--primary-text-color, inherit) !important;
+  background: #6b0000 !important;
+  color: #ffffff !important;
   z-index: ${zIndex} !important;
+}
+
+ha-dropdown-item,
+.mdc-list-item,
+[role='menuitem'] {
+  color: #ffffff !important;
 }
 
 :root {
