@@ -13,11 +13,13 @@
   const fixOverflow = scriptUrl.searchParams.get("overflow") !== "0";
   const scanShadowDom = scriptUrl.searchParams.get("shadow") !== "0";
   const debugOutline = scriptUrl.searchParams.get("debug") === "1";
+  const autoIosTargeting = scriptUrl.searchParams.get("iosauto") !== "0";
   const extraSelectorsRaw = scriptUrl.searchParams.get("extra") || "";
   const ua = navigator.userAgent || "";
   const isIOS = /iP(hone|ad|od)/i.test(ua);
   const isLegacyIOS = isIOS && /OS (15|16)_/i.test(ua);
-  const aggressiveMode = isLegacyIOS || scriptUrl.searchParams.get("aggressive") === "1";
+  const aggressiveMode =
+    (autoIosTargeting && isLegacyIOS) || scriptUrl.searchParams.get("aggressive") === "1";
 
   const extraSelectors = extraSelectorsRaw
     .split("|")

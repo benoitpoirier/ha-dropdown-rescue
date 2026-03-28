@@ -1,37 +1,37 @@
 # HA Dropdown Fix (HACS)
 
-Correctif communautaire pour Home Assistant, basé sur le ticket frontend
-[#29172](https://github.com/home-assistant/frontend/issues/29172), qui provoque des menus
-`ha-dropdown` transparents/non cliquables (problèmes de focus/superposition/z-index).
+Community fix for Home Assistant, based on frontend issue
+[#29172](https://github.com/home-assistant/frontend/issues/29172), where
+ha-dropdown menus can become transparent and non-clickable due to focus and stacking context issues.
 
-Repository officiel: https://github.com/benoitpoirier/ha-dropdown-rescue
+Official repository: https://github.com/benoitpoirier/ha-dropdown-rescue
 
-## Objectifs
+## Goals
 
-- Corriger les menus "3 points" et autres dropdowns inactifs dans l'UI.
-- Fournir une installation simple via HACS (catégorie `Integration`).
-- Permettre une configuration rapide côté `configuration.yaml`.
-- Préparer le projet pour une soumission au store HACS officiel.
+- Fix three-dot menus and other inactive dropdowns in the UI.
+- Provide simple installation through HACS in the Integration category.
+- Allow quick configuration through configuration.yaml.
+- Keep the project ready for submission to the official HACS default repository list.
 
-## Ce que fait le correctif
+## What this fix does
 
-- Injecte un module frontend global via `frontend.add_extra_js_url`.
-- Force un contexte visuel/clicable correct pour les menus ouverts.
-- Optionnellement neutralise certains conteneurs qui coupent les overlays (`overflow`, `contain`).
-- Injecte aussi les styles dans les Shadow DOM détectés, pour couvrir les zones UI concernées.
+- Injects a global frontend module using frontend.add_extra_js_url.
+- Enforces proper visual and click priority for open menus.
+- Optionally relaxes clipping containers that cut overlays (overflow and contain).
+- Injects styles into detected Shadow DOM roots to cover affected UI areas.
 
 ## Installation
 
-### 1. Ajouter le repository dans HACS
+### 1. Add the repository in HACS
 
-1. Ouvrir HACS > menu 3 points > `Custom repositories`.
-2. Ajouter l'URL du repository: `https://github.com/benoitpoirier/ha-dropdown-rescue`.
-3. Choisir la catégorie `Integration`.
-4. Installer `HA Dropdown Fix`.
+1. Open HACS and go to the three-dot menu, then Custom repositories.
+2. Add this repository URL: https://github.com/benoitpoirier/ha-dropdown-rescue
+3. Select category: Integration.
+4. Install HA Dropdown Fix.
 
-### 2. Configurer Home Assistant
+### 2. Configure Home Assistant
 
-Ajouter dans `configuration.yaml`:
+Add this in configuration.yaml:
 
 ```yaml
 ha_dropdown_fix:
@@ -40,25 +40,27 @@ ha_dropdown_fix:
   fix_overflow: true
   scan_shadow_dom: true
   debug_outline: false
+  auto_ios_targeting: true
   aggressive_mode: false
   extra_menu_selectors: []
 ```
 
-Puis redémarrer Home Assistant.
+Then restart Home Assistant.
 
 ## Configuration
 
-Paramètres disponibles sous `ha_dropdown_fix`:
+Available options under ha_dropdown_fix:
 
-- `enabled` (`bool`, défaut: `true`): active/désactive le patch.
-- `z_index` (`int`, défaut: `2147483647`): priorité visuelle des menus.
-- `fix_overflow` (`bool`, défaut: `true`): retire certains `overflow/contain` bloquants.
-- `scan_shadow_dom` (`bool`, défaut: `true`): applique le style dans les Shadow DOM.
-- `debug_outline` (`bool`, défaut: `false`): affiche un contour de debug autour des menus.
-- `aggressive_mode` (`bool`, défaut: `false`): force un mode de correction plus agressif (utile pour certains navigateurs/appareils, notamment iOS 15/16).
-- `extra_menu_selectors` (`list[str]`, défaut: `[]`): sélecteurs CSS additionnels à forcer.
+- enabled (bool, default: true): enable or disable the patch.
+- z_index (int, default: 2147483647): visual priority for menus.
+- fix_overflow (bool, default: true): relax blocking overflow and contain contexts.
+- scan_shadow_dom (bool, default: true): apply styles in detected Shadow DOM roots.
+- debug_outline (bool, default: false): show a debug outline around patched menus.
+- auto_ios_targeting (bool, default: true): automatically enable stronger targeting on iOS 15 and iOS 16. Set to false to disable iOS-specific auto targeting.
+- aggressive_mode (bool, default: false): force a stronger fix mode, useful for some browsers and devices, especially iOS 15 and iOS 16.
+- extra_menu_selectors (list[str], default: []): additional CSS selectors to force.
 
-Exemple avancé:
+Advanced example:
 
 ```yaml
 ha_dropdown_fix:
@@ -69,42 +71,42 @@ ha_dropdown_fix:
     - ".my-custom-dropdown"
 ```
 
-## Structure du projet
+## Project structure
 
-- `custom_components/ha_dropdown_fix/__init__.py`: setup intégration + injection module.
-- `custom_components/ha_dropdown_fix/frontend/ha-dropdown-fix.js`: correctif JS/CSS runtime.
-- `custom_components/ha_dropdown_fix/manifest.json`: métadonnées Home Assistant.
-- `hacs.json`: métadonnées HACS.
-- `.github/workflows/validate.yml`: validations HACS + Hassfest.
+- custom_components/ha_dropdown_fix/__init__.py: integration setup and module injection.
+- custom_components/ha_dropdown_fix/frontend/ha-dropdown-fix.js: runtime JS and CSS fix.
+- custom_components/ha_dropdown_fix/manifest.json: Home Assistant metadata.
+- hacs.json: HACS metadata.
+- .github/workflows/validate.yml: HACS and Hassfest validation workflows.
 
-## Bonnes pratiques incluses
+## Best practices included
 
-- Intégration minimaliste sans dépendance externe.
-- Configuration validée via `voluptuous`.
-- Chargement conditionnel (désactivable) et options de tuning.
-- CI de validation pour maintenir la qualité avant publication.
+- Lightweight integration with no external runtime dependencies.
+- Configuration validated with voluptuous.
+- Conditional loading with easy tuning options.
+- CI validation workflow to keep quality before publication.
 
-## Publication dans le store HACS officiel
+## Official HACS publication
 
-Pré-requis conseillés:
+Recommended prerequisites:
 
-1. Créer un repository GitHub public dédié.
-2. Renseigner `documentation`, `issue_tracker` et `codeowners` dans `manifest.json` selon votre repository public.
-3. Publier une release sémantique (`v0.1.0`, `v0.1.1`, etc.).
-4. Vérifier que HACS + Hassfest passent sur la branche par défaut.
-5. Soumettre le repository au store HACS officiel via la procédure HACS.
+1. Use a public GitHub repository.
+2. Fill documentation, issue_tracker and codeowners in manifest.json for your repository.
+3. Publish semantic releases such as v0.1.0 and v0.1.1.
+4. Ensure HACS and Hassfest checks pass on the default branch.
+5. Submit the repository through the official HACS process.
 
-Statut actuel de ce repository:
+Current repository status:
 
-- Metadata `manifest.json` configurée pour GitHub.
-- Tag/release `v0.1.0` publié.
-- Workflow de validation HACS + Hassfest en place.
+- manifest.json metadata configured for GitHub.
+- v0.1.0 and v0.1.1 tags/releases published.
+- HACS and Hassfest validation workflow in place.
 
-## Limites connues
+## Known limitations
 
-- Le bug original est côté frontend Home Assistant. Ce projet applique un patch runtime de contournement.
-- Si le frontend upstream change fortement ses classes/composants, ajuster `extra_menu_selectors` peut être nécessaire.
+- The original issue is in Home Assistant frontend. This project provides a runtime workaround.
+- If upstream frontend structure changes significantly, extra_menu_selectors may need to be adjusted.
 
 ## Contribution
 
-Les PR sont bienvenues pour élargir la couverture des menus impactés (automations, scripts, dashboards, blueprints, etc.).
+Pull requests are welcome to expand coverage for affected menus in automations, scripts, dashboards, blueprints and related areas.
