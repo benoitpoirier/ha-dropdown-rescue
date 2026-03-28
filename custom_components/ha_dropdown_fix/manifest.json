@@ -1,0 +1,10 @@
+{
+  "domain": "ha_dropdown_fix",
+  "name": "HA Dropdown Fix",
+  "version": "0.1.0",
+  "dependencies": [
+    "frontend"
+  ],
+  "config_flow": false,
+  "iot_class": "local_push"
+}
