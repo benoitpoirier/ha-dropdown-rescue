@@ -143,7 +143,42 @@ ${
 `;
 
   const installedRoots = new WeakSet();
-  const elevatedElements = new WeakSet();
+  const managedStyles = new Map();
+
+  const applyManagedStyle = (element, property, value, priority = "important") => {
+    if (!(element instanceof HTMLElement)) {
+      return;
+    }
+
+    let propertyMap = managedStyles.get(element);
+    if (!propertyMap) {
+      propertyMap = new Map();
+      managedStyles.set(element, propertyMap);
+    }
+
+    if (!propertyMap.has(property)) {
+      propertyMap.set(property, {
+        value: element.style.getPropertyValue(property),
+        priority: element.style.getPropertyPriority(property)
+      });
+    }
+
+    element.style.setProperty(property, value, priority);
+  };
+
+  const restoreManagedStyles = () => {
+    for (const [element, propertyMap] of managedStyles) {
+      for (const [property, previous] of propertyMap) {
+        if (previous.value) {
+          element.style.setProperty(property, previous.value, previous.priority || "");
+        } else {
+          element.style.removeProperty(property);
+        }
+      }
+    }
+
+    managedStyles.clear();
+  };
 
   const ensureStyle = (root) => {
     if (!root || installedRoots.has(root)) {
@@ -223,28 +258,41 @@ ${
       return;
     }
 
-    menuElement.style.setProperty("z-index", String(zIndex), "important");
-    menuElement.style.setProperty("pointer-events", "auto", "important");
-    menuElement.style.setProperty("visibility", "visible", "important");
-    menuElement.style.setProperty("opacity", "1", "important");
+    applyManagedStyle(menuElement, "z-index", String(zIndex));
+    applyManagedStyle(menuElement, "pointer-events", "auto");
+    applyManagedStyle(menuElement, "visibility", "visible");
+    applyManagedStyle(menuElement, "opacity", "1");
 
     let current = menuElement;
     let depth = 0;
+    const visited = new Set();
 
     while (current && depth < 16) {
-      if (current instanceof HTMLElement && !elevatedElements.has(current)) {
-        const isPromotedContainer = current.matches(promotedContainerSelector);
+      if (current instanceof HTMLElement && !visited.has(current)) {
+        visited.add(current);
 
-        current.style.setProperty("z-index", String(Math.max(zIndex - depth, 1000)), "important");
-        current.style.setProperty("isolation", "isolate", "important");
+        const isPromotedContainer = current.matches(promotedContainerSelector);
+        const isSearchLayer = current.matches(".search");
+
+        if (isSearchLayer && depth > 0) {
+          applyManagedStyle(current, "z-index", "10");
+          applyManagedStyle(current, "overflow", "visible");
+          applyManagedStyle(current, "contain", "none");
+          current = getParentElement(current);
+          depth += 1;
+          continue;
+        }
+
+        applyManagedStyle(current, "z-index", String(Math.max(zIndex - depth, 1000)));
+        applyManagedStyle(current, "isolation", "isolate");
 
         if (isPromotedContainer) {
-          current.style.setProperty("position", "relative", "important");
+          applyManagedStyle(current, "position", "relative");
         }
 
         if (fixOverflow) {
-          current.style.setProperty("overflow", "visible", "important");
-          current.style.setProperty("contain", "none", "important");
+          applyManagedStyle(current, "overflow", "visible");
+          applyManagedStyle(current, "contain", "none");
         }
 
         if (aggressiveMode) {
@@ -252,25 +300,23 @@ ${
           const canResetCompositeEffects = depth > 0;
 
           if (canResetCompositeEffects && computed.transform !== "none") {
-            current.style.setProperty("transform", "none", "important");
+            applyManagedStyle(current, "transform", "none");
           }
           if (canResetCompositeEffects && computed.filter !== "none") {
-            current.style.setProperty("filter", "none", "important");
+            applyManagedStyle(current, "filter", "none");
           }
           if (canResetCompositeEffects && computed.perspective !== "none") {
-            current.style.setProperty("perspective", "none", "important");
+            applyManagedStyle(current, "perspective", "none");
           }
           if (canResetCompositeEffects && computed.backdropFilter !== "none") {
-            current.style.setProperty("backdrop-filter", "none", "important");
-            current.style.setProperty("-webkit-backdrop-filter", "none", "important");
+            applyManagedStyle(current, "backdrop-filter", "none");
+            applyManagedStyle(current, "-webkit-backdrop-filter", "none");
           }
 
           if (isPromotedContainer) {
-            current.style.setProperty("position", "relative", "important");
+            applyManagedStyle(current, "position", "relative");
           }
         }
-
-        elevatedElements.add(current);
       }
 
       current = getParentElement(current);
@@ -279,6 +325,8 @@ ${
   };
 
   const promoteOpenMenus = () => {
+    restoreManagedStyles();
+
     const openMenus = new Set();
 
     const collectMenusInRoot = (root) => {
@@ -300,6 +348,10 @@ ${
     };
 
     collectMenusInRoot(document);
+
+    if (openMenus.size === 0) {
+      return;
+    }
 
     for (const menu of openMenus) {
       elevateForMenu(menu);
