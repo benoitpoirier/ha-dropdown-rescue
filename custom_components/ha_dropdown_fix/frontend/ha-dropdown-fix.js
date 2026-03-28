@@ -13,13 +13,14 @@
   const fixOverflow = scriptUrl.searchParams.get("overflow") !== "0";
   const scanShadowDom = scriptUrl.searchParams.get("shadow") !== "0";
   const debugOutline = scriptUrl.searchParams.get("debug") === "1";
-  const autoIosTargeting = scriptUrl.searchParams.get("iosauto") !== "0";
+  const autoLegacyFallback = scriptUrl.searchParams.get("legacyfallback") !== "0";
   const extraSelectorsRaw = scriptUrl.searchParams.get("extra") || "";
-  const ua = navigator.userAgent || "";
-  const isIOS = /iP(hone|ad|od)/i.test(ua);
-  const isLegacyIOS = isIOS && /OS (15|16)_/i.test(ua);
+  const supportsPopoverApi =
+    typeof HTMLElement !== "undefined" &&
+    ("showPopover" in HTMLElement.prototype || "popover" in HTMLElement.prototype);
+  const legacyPopoverFallback = autoLegacyFallback && !supportsPopoverApi;
   const aggressiveMode =
-    (autoIosTargeting && isLegacyIOS) || scriptUrl.searchParams.get("aggressive") === "1";
+    legacyPopoverFallback || scriptUrl.searchParams.get("aggressive") === "1";
 
   const extraSelectors = extraSelectorsRaw
     .split("|")
@@ -85,15 +86,7 @@ div#menu,
 [part='popup'],
 .popup,
 wa-popup[active] [part='popup'] {
-  background: #6b0000 !important;
-  color: #ffffff !important;
   z-index: ${zIndex} !important;
-}
-
-ha-dropdown-item,
-.mdc-list-item,
-[role='menuitem'] {
-  color: #ffffff !important;
 }
 
 :root {
@@ -104,7 +97,7 @@ ha-dropdown-item,
 ${
   aggressiveMode
     ? `
-/* iOS 15/16: remove common clipping and stacking constraints */
+/* Legacy popover fallback: remove common clipping and stacking constraints */
 home-assistant,
 home-assistant-main,
 ha-app-layout,
@@ -178,6 +171,25 @@ ${
     }
 
     managedStyles.clear();
+  };
+
+  const demoteCompetingLayers = () => {
+    if (!legacyPopoverFallback) {
+      return;
+    }
+
+    const candidates = document.querySelectorAll(".search");
+    for (const layer of candidates) {
+      if (!(layer instanceof HTMLElement)) {
+        continue;
+      }
+
+      applyManagedStyle(layer, "z-index", "10");
+      applyManagedStyle(layer, "isolation", "auto");
+      applyManagedStyle(layer, "contain", "none");
+      applyManagedStyle(layer, "backdrop-filter", "none");
+      applyManagedStyle(layer, "-webkit-backdrop-filter", "none");
+    }
   };
 
   const ensureStyle = (root) => {
@@ -272,16 +284,6 @@ ${
         visited.add(current);
 
         const isPromotedContainer = current.matches(promotedContainerSelector);
-        const isSearchLayer = current.matches(".search");
-
-        if (isSearchLayer && depth > 0) {
-          applyManagedStyle(current, "z-index", "10");
-          applyManagedStyle(current, "overflow", "visible");
-          applyManagedStyle(current, "contain", "none");
-          current = getParentElement(current);
-          depth += 1;
-          continue;
-        }
 
         applyManagedStyle(current, "z-index", String(Math.max(zIndex - depth, 1000)));
         applyManagedStyle(current, "isolation", "isolate");
@@ -352,6 +354,8 @@ ${
     if (openMenus.size === 0) {
       return;
     }
+
+    demoteCompetingLayers();
 
     for (const menu of openMenus) {
       elevateForMenu(menu);

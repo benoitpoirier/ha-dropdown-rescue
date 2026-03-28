@@ -40,7 +40,7 @@ ha_dropdown_fix:
   fix_overflow: true
   scan_shadow_dom: true
   debug_outline: false
-  auto_ios_targeting: true
+  auto_legacy_fallback: true
   aggressive_mode: false
   extra_menu_selectors: []
 ```
@@ -56,8 +56,8 @@ Available options under ha_dropdown_fix:
 - fix_overflow (bool, default: true): relax blocking overflow and contain contexts.
 - scan_shadow_dom (bool, default: true): apply styles in detected Shadow DOM roots.
 - debug_outline (bool, default: false): show a debug outline around patched menus.
-- auto_ios_targeting (bool, default: true): automatically enable stronger targeting on iOS 15 and iOS 16. Set to false to disable iOS-specific auto targeting.
-- aggressive_mode (bool, default: false): force a stronger fix mode, useful for some browsers and devices, especially iOS 15 and iOS 16.
+- auto_legacy_fallback (bool, default: true): automatically enable stronger fallback behavior on browsers that do not support the Popover API.
+- aggressive_mode (bool, default: false): force stronger compositing and clipping fixes regardless of browser capability detection.
 - extra_menu_selectors (list[str], default: []): additional CSS selectors to force.
 
 Advanced example:
@@ -86,6 +86,23 @@ ha_dropdown_fix:
 - Conditional loading with easy tuning options.
 - CI validation workflow to keep quality before publication.
 
+## Browser compatibility analysis (iOS 15/16)
+
+Result of the compatibility deep-dive performed on real snapshots and browser support data:
+
+- Home Assistant uses popup markup based on `popover="manual"` in several dropdown surfaces.
+- Safari iOS 15 and 16 do not provide full Popover API support (no reliable top-layer behavior).
+- In failing views, `.search` combines `position: sticky`, very high `z-index`, and `isolation`, creating an independent stacking context.
+- HA theme styles often use `backdrop-filter`, which increases compositing complexity on older WebKit versions.
+- Therefore, a pure `z-index` increase on dropdown items is not always enough on iOS 15/16.
+
+What changed because of this analysis in v0.1.7:
+
+- Replaced iOS User-Agent targeting with capability detection based on Popover API support.
+- Added a legacy fallback path that temporarily demotes competing `.search` layer styling while a menu is open.
+- Kept all style promotions reversible to avoid persistent side effects after menu close.
+- Removed temporary diagnostic color forcing that is no longer necessary.
+
 ## Official HACS publication
 
 Recommended prerequisites:
@@ -99,7 +116,7 @@ Recommended prerequisites:
 Current repository status:
 
 - manifest.json metadata configured for GitHub.
-- v0.1.0, v0.1.1, v0.1.2, v0.1.3, v0.1.4, v0.1.5 and v0.1.6 tags/releases published.
+- v0.1.0, v0.1.1, v0.1.2, v0.1.3, v0.1.4, v0.1.5, v0.1.6 and v0.1.7 tags/releases published.
 - HACS and Hassfest validation workflow in place.
 
 ## Known limitations

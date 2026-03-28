@@ -1,7 +1,7 @@
 """Constants for the HA Dropdown Fix integration."""
 
 DOMAIN = "ha_dropdown_fix"
-VERSION = "0.1.6"
+VERSION = "0.1.7"
 
 CONF_ENABLED = "enabled"
 CONF_Z_INDEX = "z_index"
@@ -9,7 +9,7 @@ CONF_FIX_OVERFLOW = "fix_overflow"
 CONF_SCAN_SHADOW_DOM = "scan_shadow_dom"
 CONF_DEBUG_OUTLINE = "debug_outline"
 CONF_AGGRESSIVE_MODE = "aggressive_mode"
-CONF_AUTO_IOS_TARGETING = "auto_ios_targeting"
+CONF_AUTO_LEGACY_FALLBACK = "auto_legacy_fallback"
 CONF_EXTRA_MENU_SELECTORS = "extra_menu_selectors"
 
 DEFAULT_ENABLED = True
@@ -18,7 +18,7 @@ DEFAULT_FIX_OVERFLOW = True
 DEFAULT_SCAN_SHADOW_DOM = True
 DEFAULT_DEBUG_OUTLINE = False
 DEFAULT_AGGRESSIVE_MODE = False
-DEFAULT_AUTO_IOS_TARGETING = True
+DEFAULT_AUTO_LEGACY_FALLBACK = True
 DEFAULT_EXTRA_MENU_SELECTORS: list[str] = []
 
 STATIC_MODULE_URL = "/ha_dropdown_fix/ha-dropdown-fix.js"
