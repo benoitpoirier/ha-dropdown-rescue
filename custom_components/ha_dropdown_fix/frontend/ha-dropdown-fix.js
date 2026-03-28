@@ -77,6 +77,14 @@
     "ha-select"
   ].join(",");
 
+  const blockedPromotionSelector = [
+    "home-assistant",
+    "home-assistant-main",
+    "ha-app-layout",
+    "app-drawer-layout",
+    "ha-sidebar"
+  ].join(",");
+
   const overflowSelectors = [
     ".mdc-data-table__row",
     ".mdc-data-table__cell",
@@ -110,24 +118,6 @@ wa-popup[active] [part='popup'] {
 }
 
 ${
-  aggressiveMode
-    ? `
-/* Legacy popover fallback: remove common clipping and stacking constraints */
-home-assistant,
-home-assistant-main,
-ha-app-layout,
-app-drawer-layout,
-ha-panel-lovelace,
-hui-root,
-ha-config-section,
-ha-config-dashboard {
-  overflow: visible !important;
-}
-`
-    : ""
-}
-
-${
   fixOverflow
     ? `${overflowSelectors} {
   overflow: visible !important;
@@ -153,6 +143,7 @@ ${activeMenuSelector} {
 `;
 
   const installedRoots = new WeakSet();
+  const styledRoots = new Set([document]);
   const managedStyles = new Map();
 
   const applyManagedStyle = (element, property, value, priority = "important") => {
@@ -190,18 +181,15 @@ ${activeMenuSelector} {
     managedStyles.clear();
   };
 
-  const collectMatchesAcrossRoots = (selector, root = document, results = new Set()) => {
-    if (!root || !root.querySelectorAll) {
-      return results;
-    }
+  const collectMatchesAcrossRoots = (selector, roots = styledRoots) => {
+    const results = new Set();
+    for (const root of roots) {
+      if (!root || !root.querySelectorAll) {
+        continue;
+      }
 
-    for (const match of root.querySelectorAll(selector)) {
-      results.add(match);
-    }
-
-    for (const element of root.querySelectorAll("*")) {
-      if (element.shadowRoot) {
-        collectMatchesAcrossRoots(selector, element.shadowRoot, results);
+      for (const match of root.querySelectorAll(selector)) {
+        results.add(match);
       }
     }
 
@@ -236,6 +224,7 @@ ${activeMenuSelector} {
 
     if (root.querySelector && root.querySelector(`#${styleId}`)) {
       installedRoots.add(root);
+      styledRoots.add(root);
       return;
     }
 
@@ -251,6 +240,7 @@ ${activeMenuSelector} {
 
     root.appendChild(style);
     installedRoots.add(root);
+    styledRoots.add(root);
   };
 
   const walkNodeForShadowRoots = (node) => {
@@ -315,25 +305,34 @@ ${activeMenuSelector} {
     let depth = 0;
     const visited = new Set();
 
-    while (current && depth < 24) {
+    while (current && depth < 20) {
       if (current instanceof HTMLElement && !visited.has(current)) {
         visited.add(current);
 
-        const isPromotedContainer = current.matches(promotedContainerSelector);
+        if (current.matches(blockedPromotionSelector)) {
+          current = getParentElement(current);
+          depth += 1;
+          continue;
+        }
 
-        applyManagedStyle(current, "z-index", String(Math.max(zIndex - depth, 1000)));
+        const isPromotedContainer = current.matches(promotedContainerSelector);
+        const shouldPromoteNode = depth <= 1 || isPromotedContainer;
+
+        if (shouldPromoteNode) {
+          applyManagedStyle(current, "z-index", String(Math.max(zIndex - depth, 1000)));
+        }
 
         if (isPromotedContainer) {
           applyManagedStyle(current, "position", "relative");
           applyManagedStyle(current, "isolation", "isolate");
         }
 
-        if (fixOverflow) {
+        if (fixOverflow && shouldPromoteNode) {
           applyManagedStyle(current, "overflow", "visible");
           applyManagedStyle(current, "contain", "none");
         }
 
-        if (aggressiveMode) {
+        if (aggressiveMode && shouldPromoteNode) {
           const computed = window.getComputedStyle(current);
           const canResetCompositeEffects = depth > 0;
 
@@ -367,13 +366,9 @@ ${activeMenuSelector} {
 
     const openMenus = new Set();
 
-    const collectMenusInRoot = (root) => {
-      for (const menu of collectMatchesAcrossRoots(activeMenuSelector, root)) {
-        openMenus.add(menu);
-      }
-    };
-
-    collectMenusInRoot(document);
+    for (const menu of collectMatchesAcrossRoots(activeMenuSelector)) {
+      openMenus.add(menu);
+    }
 
     if (openMenus.size === 0) {
       return;
@@ -425,7 +420,7 @@ ${activeMenuSelector} {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["open", "active", "class", "style"]
+    attributeFilter: ["open", "active"]
   });
 
   document.addEventListener("click", schedulePromote, true);

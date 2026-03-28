@@ -110,6 +110,13 @@ Diagnostic extension in v0.1.8:
 - Competing `.search` layers are scanned in Shadow DOM roots, not only in the document root.
 - Ancestor promotion is more conservative (reduced isolation forcing, deeper but safer traversal).
 
+Stability/performance refinement in v0.1.9:
+
+- Prevent promotion on global layout hosts (`home-assistant`, `ha-app-layout`, `app-drawer-layout`, `ha-sidebar`) to avoid masking the main sidebar.
+- Reduce ancestor promotion scope to nearby/targeted nodes instead of broad chain forcing.
+- Replace full recursive root scans with tracked styled roots for lower CPU cost.
+- Reduce mutation observer churn by observing only `open` and `active` attributes.
+
 ## Official HACS publication
 
 Recommended prerequisites:
@@ -123,7 +130,7 @@ Recommended prerequisites:
 Current repository status:
 
 - manifest.json metadata configured for GitHub.
-- v0.1.0, v0.1.1, v0.1.2, v0.1.3, v0.1.4, v0.1.5, v0.1.6, v0.1.7 and v0.1.8 tags/releases published.
+- v0.1.0, v0.1.1, v0.1.2, v0.1.3, v0.1.4, v0.1.5, v0.1.6, v0.1.7, v0.1.8 and v0.1.9 tags/releases published.
 - HACS and Hassfest validation workflow in place.
 
 ## Known limitations
