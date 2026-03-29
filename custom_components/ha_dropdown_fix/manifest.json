@@ -1,7 +1,7 @@
 {
   "domain": "ha_dropdown_fix",
   "name": "HA Dropdown Fix",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "documentation": "https://github.com/benoitpoirier/ha-dropdown-rescue",
   "issue_tracker": "https://github.com/benoitpoirier/ha-dropdown-rescue/issues",
   "codeowners": [

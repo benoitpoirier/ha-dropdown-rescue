@@ -18,18 +18,26 @@ from .const import (
     CONF_AGGRESSIVE_MODE,
     CONF_AUTO_LEGACY_FALLBACK,
     CONF_DEBUG_OUTLINE,
+    CONF_ENABLE_PATCH_OLD_IOS,
+    CONF_ENABLE_PATCH_WINDOWS_OLD_BROWSERS,
     CONF_ENABLED,
     CONF_EXTRA_MENU_SELECTORS,
     CONF_FIX_OVERFLOW,
     CONF_SCAN_SHADOW_DOM,
+    CONF_WINDOWS_CHROMIUM_MAX,
+    CONF_WINDOWS_FIREFOX_MAX,
     CONF_Z_INDEX,
     DEFAULT_AGGRESSIVE_MODE,
     DEFAULT_AUTO_LEGACY_FALLBACK,
     DEFAULT_DEBUG_OUTLINE,
+    DEFAULT_ENABLE_PATCH_OLD_IOS,
+    DEFAULT_ENABLE_PATCH_WINDOWS_OLD_BROWSERS,
     DEFAULT_ENABLED,
     DEFAULT_EXTRA_MENU_SELECTORS,
     DEFAULT_FIX_OVERFLOW,
     DEFAULT_SCAN_SHADOW_DOM,
+    DEFAULT_WINDOWS_CHROMIUM_MAX,
+    DEFAULT_WINDOWS_FIREFOX_MAX,
     DEFAULT_Z_INDEX,
     DOMAIN,
     STATIC_MODULE_URL,
@@ -61,6 +69,22 @@ CONFIG_SCHEMA = vol.Schema(
                     default=DEFAULT_AUTO_LEGACY_FALLBACK,
                 ): cv.boolean,
                 vol.Optional(
+                    CONF_ENABLE_PATCH_OLD_IOS,
+                    default=DEFAULT_ENABLE_PATCH_OLD_IOS,
+                ): cv.boolean,
+                vol.Optional(
+                    CONF_ENABLE_PATCH_WINDOWS_OLD_BROWSERS,
+                    default=DEFAULT_ENABLE_PATCH_WINDOWS_OLD_BROWSERS,
+                ): cv.boolean,
+                vol.Optional(
+                    CONF_WINDOWS_FIREFOX_MAX,
+                    default=DEFAULT_WINDOWS_FIREFOX_MAX,
+                ): vol.All(vol.Coerce(int), vol.Range(min=1)),
+                vol.Optional(
+                    CONF_WINDOWS_CHROMIUM_MAX,
+                    default=DEFAULT_WINDOWS_CHROMIUM_MAX,
+                ): vol.All(vol.Coerce(int), vol.Range(min=1)),
+                vol.Optional(
                     CONF_EXTRA_MENU_SELECTORS,
                     default=DEFAULT_EXTRA_MENU_SELECTORS,
                 ): vol.All(cv.ensure_list, [cv.string]),
@@ -91,6 +115,11 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         ]
     )
 
+    enable_patch_old_ios = bool(integration_config[CONF_ENABLE_PATCH_OLD_IOS])
+    enable_patch_windows_old_browsers = bool(
+        integration_config[CONF_ENABLE_PATCH_WINDOWS_OLD_BROWSERS]
+    )
+
     params = {
         "v": VERSION,
         "z": str(integration_config[CONF_Z_INDEX]),
@@ -101,6 +130,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         "legacyfallback": "1"
         if integration_config[CONF_AUTO_LEGACY_FALLBACK]
         else "0",
+        "epios": "1" if enable_patch_old_ios else "0",
+        "epwob": "1" if enable_patch_windows_old_browsers else "0",
+        "wfmax": str(integration_config[CONF_WINDOWS_FIREFOX_MAX]),
+        "wcmax": str(integration_config[CONF_WINDOWS_CHROMIUM_MAX]),
     }
 
     extra_selectors = integration_config[CONF_EXTRA_MENU_SELECTORS]

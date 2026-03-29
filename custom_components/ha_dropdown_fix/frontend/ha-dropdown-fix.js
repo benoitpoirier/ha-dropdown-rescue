@@ -14,7 +14,40 @@
   const scanShadowDom = scriptUrl.searchParams.get("shadow") !== "0";
   const debugOutline = scriptUrl.searchParams.get("debug") === "1";
   const autoLegacyFallback = scriptUrl.searchParams.get("legacyfallback") !== "0";
+  const enablePatchOldIOS = scriptUrl.searchParams.get("epios") === "1";
+  const enablePatchWindowsOldBrowsers = scriptUrl.searchParams.get("epwob") === "1";
+  const windowsFirefoxMax = Number.parseInt(scriptUrl.searchParams.get("wfmax") || "115", 10);
+  const windowsChromiumMax = Number.parseInt(scriptUrl.searchParams.get("wcmax") || "109", 10);
   const extraSelectorsRaw = scriptUrl.searchParams.get("extra") || "";
+  const userAgent = navigator.userAgent || "";
+  const isiOSDevice = /iP(?:hone|ad|od)/.test(userAgent);
+  const iOSMajorVersionMatch = userAgent.match(/OS (\d+)_/);
+  const iOSMajorVersion = iOSMajorVersionMatch ? Number.parseInt(iOSMajorVersionMatch[1], 10) : NaN;
+  const isiOS15Or16 = isiOSDevice && (iOSMajorVersion === 15 || iOSMajorVersion === 16);
+  const isWindows = /Windows NT/.test(userAgent);
+  const firefoxMajorVersionMatch = userAgent.match(/Firefox\/(\d+)/);
+  const firefoxMajorVersion = firefoxMajorVersionMatch
+    ? Number.parseInt(firefoxMajorVersionMatch[1], 10)
+    : NaN;
+  const edgeMajorVersionMatch = userAgent.match(/Edg\/(\d+)/);
+  const edgeMajorVersion = edgeMajorVersionMatch
+    ? Number.parseInt(edgeMajorVersionMatch[1], 10)
+    : NaN;
+  const chromeMajorVersionMatch = userAgent.match(/Chrome\/(\d+)/);
+  const chromeMajorVersion = chromeMajorVersionMatch
+    ? Number.parseInt(chromeMajorVersionMatch[1], 10)
+    : NaN;
+  const isFirefoxLegacyOnWindows =
+    isWindows && Number.isFinite(firefoxMajorVersion) && firefoxMajorVersion <= windowsFirefoxMax;
+  const isEdgeLegacyOnWindows =
+    isWindows && Number.isFinite(edgeMajorVersion) && edgeMajorVersion <= windowsChromiumMax;
+  const isChromeLegacyOnWindows =
+    isWindows &&
+    !Number.isFinite(edgeMajorVersion) &&
+    Number.isFinite(chromeMajorVersion) &&
+    chromeMajorVersion <= windowsChromiumMax;
+  const isOldWindowsTargetBrowser =
+    isFirefoxLegacyOnWindows || isEdgeLegacyOnWindows || isChromeLegacyOnWindows;
   const supportsPopoverMethods =
     typeof HTMLElement !== "undefined" &&
     "showPopover" in HTMLElement.prototype &&
@@ -28,7 +61,41 @@
   const aggressiveMode =
     legacyPopoverFallback || scriptUrl.searchParams.get("aggressive") === "1";
 
+  const applyOldIOSPatch = enablePatchOldIOS && isiOS15Or16;
+  const applyWindowsLegacyPatch =
+    enablePatchWindowsOldBrowsers && isOldWindowsTargetBrowser;
+  const hasScopedPatchToggle = enablePatchOldIOS || enablePatchWindowsOldBrowsers;
+
+  if (hasScopedPatchToggle && !applyOldIOSPatch && !applyWindowsLegacyPatch) {
+    console.info("[ha-dropdown-fix] disabled by scoped patch toggles", {
+      enablePatchOldIOS,
+      enablePatchWindowsOldBrowsers,
+      applyOldIOSPatch,
+      applyWindowsLegacyPatch,
+      isOldWindowsTargetBrowser,
+      isFirefoxLegacyOnWindows,
+      isEdgeLegacyOnWindows,
+      isChromeLegacyOnWindows,
+      isiOS15Or16,
+      userAgent
+    });
+    return;
+  }
+
+  const legacyWindowsPatchMode = applyWindowsLegacyPatch;
+
   console.info("[ha-dropdown-fix] popover decision", {
+    enablePatchOldIOS,
+    enablePatchWindowsOldBrowsers,
+    applyOldIOSPatch,
+    applyWindowsLegacyPatch,
+    isiOS15Or16,
+    windowsFirefoxMax,
+    windowsChromiumMax,
+    isOldWindowsTargetBrowser,
+    isFirefoxLegacyOnWindows,
+    isEdgeLegacyOnWindows,
+    isChromeLegacyOnWindows,
     autoLegacyFallback,
     supportsPopoverMethods,
     supportsPopoverSelector,
@@ -137,6 +204,15 @@ ${
 ${activeMenuSelector} {
   background: #6b0000 !important;
   color: #ffffff !important;
+}`
+    : ""
+}
+
+${
+  legacyWindowsPatchMode
+    ? `${menuSelector},
+${activeMenuSelector} {
+  display: flex !important;
 }`
     : ""
 }
@@ -427,4 +503,14 @@ ${activeMenuSelector} {
   document.addEventListener("pointerdown", schedulePromote, true);
   window.addEventListener("resize", schedulePromote, { passive: true });
   window.addEventListener("orientationchange", schedulePromote, { passive: true });
+
+  if (legacyWindowsPatchMode) {
+    setInterval(() => {
+      ensureStyle(document);
+      if (scanShadowDom) {
+        walkNodeForShadowRoots(document.body);
+      }
+      schedulePromote();
+    }, 1500);
+  }
 })();

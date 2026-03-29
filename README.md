@@ -42,6 +42,10 @@ ha_dropdown_fix:
   debug_outline: false
   auto_legacy_fallback: true
   aggressive_mode: false
+  enable_patch_old_IOS: false
+  enable_patch_windows_old_browsers: false
+  windows_firefox_max: 115
+  windows_chromium_max: 109
   extra_menu_selectors: []
 ```
 
@@ -58,6 +62,10 @@ Available options under ha_dropdown_fix:
 - debug_outline (bool, default: false): diagnostic mode, forces a dark red menu background and white text on targeted dropdown surfaces.
 - auto_legacy_fallback (bool, default: true): automatically enable stronger fallback behavior on browsers that do not support the Popover API.
 - aggressive_mode (bool, default: false): force stronger compositing and clipping fixes regardless of browser capability detection.
+- enable_patch_old_IOS (bool, default: false): enable the old iOS targeted patch path (iOS 15/16).
+- enable_patch_windows_old_browsers (bool, default: false): enable the legacy Windows browsers targeted patch path.
+- windows_firefox_max (int, default: 115): maximum Firefox major version on Windows matched by enable_patch_windows_old_browsers.
+- windows_chromium_max (int, default: 109): maximum Edge/Chrome major version on Windows matched by enable_patch_windows_old_browsers.
 - extra_menu_selectors (list[str], default: []): additional CSS selectors to force.
 
 Advanced example:
@@ -107,6 +115,17 @@ Optional diagnostics:
 
 - `debug_outline: true` switches targeted dropdown surfaces to a dark red diagnostic background for visual verification.
 - Popover fallback decisions are logged in the browser console under `[ha-dropdown-fix]`.
+
+Legacy Windows compatibility mode:
+
+- Set `enable_patch_windows_old_browsers: true` to apply the patch only to Firefox 115 and older, and Edge/Chrome 109 and older on Windows.
+- Adjust `windows_firefox_max` and `windows_chromium_max` if you want to widen or narrow the legacy Windows target range.
+- In this mode, the integration also enables an additional legacy compatibility behavior inspired by issue #29172 reports: reinforced menu display styling and periodic rescan for dynamically created roots.
+
+Old iOS compatibility mode:
+
+- Set `enable_patch_old_IOS: true` to apply the patch on iOS 15/16 clients.
+- The two toggles are independent and can be enabled together.
 
 ## Official HACS publication
 

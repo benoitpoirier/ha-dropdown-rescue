@@ -1,7 +1,7 @@
 """Constants for the HA Dropdown Fix integration."""
 
 DOMAIN = "ha_dropdown_fix"
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 CONF_ENABLED = "enabled"
 CONF_Z_INDEX = "z_index"
@@ -10,6 +10,10 @@ CONF_SCAN_SHADOW_DOM = "scan_shadow_dom"
 CONF_DEBUG_OUTLINE = "debug_outline"
 CONF_AGGRESSIVE_MODE = "aggressive_mode"
 CONF_AUTO_LEGACY_FALLBACK = "auto_legacy_fallback"
+CONF_ENABLE_PATCH_OLD_IOS = "enable_patch_old_IOS"
+CONF_ENABLE_PATCH_WINDOWS_OLD_BROWSERS = "enable_patch_windows_old_browsers"
+CONF_WINDOWS_FIREFOX_MAX = "windows_firefox_max"
+CONF_WINDOWS_CHROMIUM_MAX = "windows_chromium_max"
 CONF_EXTRA_MENU_SELECTORS = "extra_menu_selectors"
 
 DEFAULT_ENABLED = True
@@ -19,6 +23,10 @@ DEFAULT_SCAN_SHADOW_DOM = True
 DEFAULT_DEBUG_OUTLINE = False
 DEFAULT_AGGRESSIVE_MODE = False
 DEFAULT_AUTO_LEGACY_FALLBACK = True
+DEFAULT_ENABLE_PATCH_OLD_IOS = False
+DEFAULT_ENABLE_PATCH_WINDOWS_OLD_BROWSERS = False
+DEFAULT_WINDOWS_FIREFOX_MAX = 115
+DEFAULT_WINDOWS_CHROMIUM_MAX = 109
 DEFAULT_EXTRA_MENU_SELECTORS: list[str] = []
 
 STATIC_MODULE_URL = "/ha_dropdown_fix/ha-dropdown-fix.js"
