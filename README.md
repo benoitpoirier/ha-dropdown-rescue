@@ -42,7 +42,7 @@ ha_dropdown_fix:
   debug_outline: false
   auto_legacy_fallback: true
   aggressive_mode: false
-  enable_patch_old_IOS: false
+  enable_patch_old_ios: false
   enable_patch_windows_old_browsers: false
   windows_firefox_max: 115
   windows_chromium_max: 109
@@ -62,7 +62,7 @@ Available options under ha_dropdown_fix:
 - debug_outline (bool, default: false): diagnostic mode, forces a dark red menu background and white text on targeted dropdown surfaces.
 - auto_legacy_fallback (bool, default: true): automatically enable stronger fallback behavior on browsers that do not support the Popover API.
 - aggressive_mode (bool, default: false): force stronger compositing and clipping fixes regardless of browser capability detection.
-- enable_patch_old_IOS (bool, default: false): enable the old iOS targeted patch path (iOS 15/16).
+- enable_patch_old_ios (bool, default: false): enable the old iOS targeted patch path (iOS 15/16).
 - enable_patch_windows_old_browsers (bool, default: false): enable the legacy Windows browsers targeted patch path.
 - windows_firefox_max (int, default: 115): maximum Firefox major version on Windows matched by enable_patch_windows_old_browsers.
 - windows_chromium_max (int, default: 109): maximum Edge/Chrome major version on Windows matched by enable_patch_windows_old_browsers.
@@ -124,8 +124,9 @@ Legacy Windows compatibility mode:
 
 Old iOS compatibility mode:
 
-- Set `enable_patch_old_IOS: true` to apply the patch on iOS 15/16 clients.
+- Set `enable_patch_old_ios: true` to apply the patch on iOS 15/16 clients.
 - The two toggles are independent and can be enabled together.
+- Safety guard: on iOS clients outside 15/16, the runtime now auto-disables the patch.
 
 ## Official HACS publication
 

@@ -1,7 +1,7 @@
 """Constants for the HA Dropdown Fix integration."""
 
 DOMAIN = "ha_dropdown_fix"
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 
 CONF_ENABLED = "enabled"
 CONF_Z_INDEX = "z_index"
@@ -11,6 +11,7 @@ CONF_DEBUG_OUTLINE = "debug_outline"
 CONF_AGGRESSIVE_MODE = "aggressive_mode"
 CONF_AUTO_LEGACY_FALLBACK = "auto_legacy_fallback"
 CONF_ENABLE_PATCH_OLD_IOS = "enable_patch_old_IOS"
+CONF_ENABLE_PATCH_OLD_IOS_LOWER = "enable_patch_old_ios"
 CONF_ENABLE_PATCH_WINDOWS_OLD_BROWSERS = "enable_patch_windows_old_browsers"
 CONF_WINDOWS_FIREFOX_MAX = "windows_firefox_max"
 CONF_WINDOWS_CHROMIUM_MAX = "windows_chromium_max"

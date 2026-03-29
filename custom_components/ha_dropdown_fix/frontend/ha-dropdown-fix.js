@@ -20,9 +20,17 @@
   const windowsChromiumMax = Number.parseInt(scriptUrl.searchParams.get("wcmax") || "109", 10);
   const extraSelectorsRaw = scriptUrl.searchParams.get("extra") || "";
   const userAgent = navigator.userAgent || "";
-  const isiOSDevice = /iP(?:hone|ad|od)/.test(userAgent);
-  const iOSMajorVersionMatch = userAgent.match(/OS (\d+)_/);
-  const iOSMajorVersion = iOSMajorVersionMatch ? Number.parseInt(iOSMajorVersionMatch[1], 10) : NaN;
+  const maxTouchPoints = Number.isFinite(navigator.maxTouchPoints)
+    ? navigator.maxTouchPoints
+    : 0;
+  const isiOSMobileUA = /iP(?:hone|ad|od)/.test(userAgent);
+  const isiPadOSDesktopUA =
+    /Macintosh/.test(userAgent) && /Mobile\//.test(userAgent) && maxTouchPoints > 1;
+  const isiOSDevice = isiOSMobileUA || isiPadOSDesktopUA;
+  const iOSMajorVersionMatch = userAgent.match(/OS (\d+)[._]/);
+  const iOSMajorVersion = iOSMajorVersionMatch
+    ? Number.parseInt(iOSMajorVersionMatch[1], 10)
+    : NaN;
   const isiOS15Or16 = isiOSDevice && (iOSMajorVersion === 15 || iOSMajorVersion === 16);
   const isWindows = /Windows NT/.test(userAgent);
   const firefoxMajorVersionMatch = userAgent.match(/Firefox\/(\d+)/);
@@ -65,6 +73,26 @@
   const applyWindowsLegacyPatch =
     enablePatchWindowsOldBrowsers && isOldWindowsTargetBrowser;
   const hasScopedPatchToggle = enablePatchOldIOS || enablePatchWindowsOldBrowsers;
+
+  if (isiOSDevice && !isiOS15Or16) {
+    console.info("[ha-dropdown-fix] disabled on iOS outside supported range (15/16)", {
+      isiOSDevice,
+      iOSMajorVersion,
+      isiOSMobileUA,
+      isiPadOSDesktopUA,
+      userAgent
+    });
+    return;
+  }
+
+  if (enablePatchOldIOS && !isiOS15Or16) {
+    console.info("[ha-dropdown-fix] old iOS patch skipped (target is iOS 15/16 only)", {
+      enablePatchOldIOS,
+      isiOS15Or16,
+      iOSMajorVersion,
+      userAgent
+    });
+  }
 
   if (hasScopedPatchToggle && !applyOldIOSPatch && !applyWindowsLegacyPatch) {
     console.info("[ha-dropdown-fix] disabled by scoped patch toggles", {

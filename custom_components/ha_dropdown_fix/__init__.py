@@ -19,6 +19,7 @@ from .const import (
     CONF_AUTO_LEGACY_FALLBACK,
     CONF_DEBUG_OUTLINE,
     CONF_ENABLE_PATCH_OLD_IOS,
+    CONF_ENABLE_PATCH_OLD_IOS_LOWER,
     CONF_ENABLE_PATCH_WINDOWS_OLD_BROWSERS,
     CONF_ENABLED,
     CONF_EXTRA_MENU_SELECTORS,
@@ -73,6 +74,10 @@ CONFIG_SCHEMA = vol.Schema(
                     default=DEFAULT_ENABLE_PATCH_OLD_IOS,
                 ): cv.boolean,
                 vol.Optional(
+                    CONF_ENABLE_PATCH_OLD_IOS_LOWER,
+                    default=DEFAULT_ENABLE_PATCH_OLD_IOS,
+                ): cv.boolean,
+                vol.Optional(
                     CONF_ENABLE_PATCH_WINDOWS_OLD_BROWSERS,
                     default=DEFAULT_ENABLE_PATCH_WINDOWS_OLD_BROWSERS,
                 ): cv.boolean,
@@ -115,7 +120,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         ]
     )
 
-    enable_patch_old_ios = bool(integration_config[CONF_ENABLE_PATCH_OLD_IOS])
+    enable_patch_old_ios = bool(
+        integration_config[CONF_ENABLE_PATCH_OLD_IOS]
+        or integration_config[CONF_ENABLE_PATCH_OLD_IOS_LOWER]
+    )
     enable_patch_windows_old_browsers = bool(
         integration_config[CONF_ENABLE_PATCH_WINDOWS_OLD_BROWSERS]
     )
